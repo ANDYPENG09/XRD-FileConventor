@@ -1,23 +1,25 @@
 # XRD-FileConventor
 
 A standalone, single-file, offline web tool for inter-converting powder X-ray
-diffraction (XRD) data between common file formats. All processing runs
-locally in your browser — no server, no upload, no dependencies.
+diffraction (XRD) data between the file formats used by **Rigaku**, **Bruker**
+and **MDI Jade**, plus generic numeric text. All processing runs locally in
+your browser — no server, no upload, no dependencies.
 
 > **Made by:** PENG &nbsp;|&nbsp; **Built with:** VibeCoding &nbsp;|&nbsp; **License:** MIT
 
 > [!IMPORTANT]
-> **Validation scope.** The author has access to **Rigaku** and **Bruker** diffractometers only.
-> Conversions have therefore been verified **only between formats produced by these two vendors**.
-> Support for other vendors' formats is implemented from published open-source specifications but
-> is **untested against real instrument files** — please verify the output before use.
-> See [Validation scope](#validation-scope) for details.
+> **Scope.** This release deliberately ships **only the formats the author can validate.**
+> The author works with **Rigaku** and **Bruker** diffractometers and analyses data in
+> **MDI Jade**, so support is limited to those ecosystems plus generic text.
+> Converters for other vendors were written but are **not shipped** — see
+> [Why other formats are not included](#why-other-formats-are-not-included).
 
 ## Features
 
 - **Zero dependencies** — a single `.html` file. Double-click to open in any modern browser.
 - **Fully offline** — your data never leaves the machine.
-- **10+ text formats** inter-convertible, plus **Rigaku `.rasx` input** and **Bruker RAW ver.1 binary output**.
+- **Rigaku `.rasx` input** (SmartLab ZIP container) and **Bruker RAW ver.1 binary output**.
+- **Jade MDI ASCII** read and write.
 - **Plot preview** with drag-to-zoom and √Intensity view.
 - **Wavelength conversion** between anodes (Cu/Co/Fe/Cr/Mo or custom) using the standard formula
   `2θ′ = 2·asin( (λ′/λ)·sin(2θ/2) )`.
@@ -26,31 +28,38 @@ locally in your browser — no server, no upload, no dependencies.
 
 ## Supported formats
 
-| Direction | Formats |
-|-----------|---------|
-| **Input** | `.xy` `.xye` `.csv` `.txt` `.dat` (Riet7) `.cpi` (Sietronics) `.udf` (Philips) `.uxd` (Bruker) `.asc` (Rigaku) `.ras` (Rigaku) `.rasx` (Rigaku SmartLab, ZIP) `.xrdml` (PANalytical) `.gsas`/`.gsa` (GSAS) `.mdi` (Jade) `.json` and generic two-column text |
-| **Output** | `XY` `XYE` `CSV` `Riet7 DAT` `Sietronics CPI` `Philips UDF` `Bruker UXD` `Rigaku ASC` `GSAS ESD` `PANalytical XRDML` `Bruker RAW ver.1` `JSON` `d-spacing CSV` |
+| Vendor / family | Read | Write |
+|-----------------|------|-------|
+| **Rigaku** | `.rasx` (SmartLab, ZIP) · `.ras` · `.asc` | `.asc` |
+| **Bruker** | `.uxd` | `.raw` (ver.1, binary) · `.uxd` |
+| **Jade / MDI** | `.mdi` (MDI ASCII) | `.mdi` (MDI ASCII) |
+| **Generic** | `.xy` `.xye` `.csv` `.txt` `.dat` `.json` · any two-column numeric text | `XY` `XYE` `CSV` `JSON` · d-spacing table CSV |
 
-> Binary/compressed inputs other than `.rasx` (e.g. `.raw`, `.brml`) are not read by the web
-> version; convert them with a desktop tool such as PowDLL first.
+> Binary inputs other than `.rasx` (e.g. Bruker `.raw`, `.brml`) cannot be read by this tool;
+> export them to a text format from the vendor software first.
 
 ## Validation scope
 
-The instruments available to the author are **Rigaku** and **Bruker** only. Test coverage
-therefore reflects that:
-
 | Status | Formats | Notes |
 |--------|---------|-------|
-| ✅ **Verified on real instrument files** | Rigaku `.rasx` (SmartLab), `.ras`, `.asc` · Bruker `.raw` (ver.1), `.uxd` | Round-trip checked, including UTF-16 decoding, attenuation-factor scaling and wavelength propagation for `.rasx` → `.raw` |
-| ✅ **Verified with synthetic data** | `.xy` `.xye` `.csv` `.txt` `.json` · d-spacing CSV | Plain-text formats; unit-tested parsers/writers |
-| ⚠️ **Implemented from spec, untested on real files** | PANalytical `.xrdml` · Sietronics `.cpi` · Philips `.udf` · Jade `.mdi` · GSAS `.gsas`/`.gsa` · Riet7 `.dat` | Written strictly to the published open-source specifications (xylib / GSAS-II). Byte-level or header-field deviations produced by specific instrument software versions cannot be ruled out |
+| ✅ **Verified on real instrument files** | Rigaku `.rasx` `.ras` `.asc` · Bruker `.raw` (ver.1) `.uxd` | Round-trip checked, including UTF-16 decoding, attenuation-factor scaling and wavelength propagation for `.rasx` → `.raw` |
+| ✅ **Verified by automated round-trip tests** | `.mdi` (Jade) · `.xy` `.xye` `.csv` `.txt` `.json` · d-spacing CSV | Written to spec and read back byte-for-byte; the `.mdi` writer follows the MDI Jade manual but has been exercised on a smaller real-file sample set than the Rigaku/Bruker paths |
 
 **Recommendation:** always open the converted file in your own analysis software and compare the
 2θ range, step size, point count and peak positions against the source before using the result for
 analysis or publication.
 
-If you have sample files from an untested vendor, please open an issue — real-world test data for
-these formats is the most useful contribution to this project.
+## Why other formats are not included
+
+Readers and writers for **PANalytical `.xrdml`**, **Sietronics `.cpi`**, **Philips `.udf`**,
+**GSAS ESD/STD** and **Riet7 `.dat`** were implemented from published open-source specifications,
+but the author has no access to those instruments and could not test the output against real
+files. Rather than ship converters that might silently produce subtly wrong data, they have been
+kept out of this release.
+
+If you have sample files from any of these vendors, please **open an issue** — real-world test
+data is the most useful contribution to this project, and the corresponding converter can be
+re-enabled and validated quickly.
 
 ## Accuracy notes
 
@@ -60,8 +69,12 @@ these formats is the most useful contribution to this project.
 - **Bruker RAW ver.1** is written as a little-endian binary blob (`magic "RAW "`, `float32`
   intensities) whose structure was verified against the open-source **xylib** library
   (`bruker_raw.cpp`, `load_version1`).
-- Fixed-step formats (DAT/CPI/UDF/ASC/GSAS/XRDML/RAW) write the average step in the header when
-  the source step is non-uniform.
+- **MDI ASCII** follows the layout documented in the MDI Jade manual: line 1 date + sample name,
+  line 2 `start step scanSpeed anode wavelength end nPoints`, then 8 intensities per line with no
+  angle column. The 2θ axis is always rebuilt from `start + i·step`, so a malformed
+  `end`/`nPoints` field cannot corrupt the data.
+- Fixed-step formats (`RAW` / `ASC` / `MDI` / `UXD`) write the average step in the header when the
+  source step is non-uniform; a warning is shown in that case.
 
 ## Technical notes
 
@@ -71,15 +84,16 @@ these formats is the most useful contribution to this project.
 
 ## Acknowledgements & references
 
-Format specifications and structural details were adapted from open-source projects:
+Format specifications and structural details were adapted from open-source projects and
+published documentation:
 
 - **xylib** (LGPL) — reference for the Bruker RAW ver.1 byte layout.
-- **GSAS-II** (BSD-3-Clause) — reference for PANalytical XRDML and related structures.
+- **GSAS-II** (BSD-3-Clause) — reference for the Rigaku RASX container structure.
+- **MDI Jade manual** — reference for the MDI ASCII pattern layout.
 - **opXRD** (CC BY 4.0, arXiv:2503.05577v2) — data-quality filtering guidelines.
 
 This project is an **independent re-implementation** written from scratch. It is not affiliated
-with, endorsed by, or derived from the original PowDLL desktop application (Nikos Kourkoumelis)
-or any other converter named above.
+with, endorsed by, or derived from any commercial converter or instrument-vendor software.
 
 ## License
 

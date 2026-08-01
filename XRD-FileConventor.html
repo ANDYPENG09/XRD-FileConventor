@@ -86,25 +86,24 @@ code{background:#f1f5f9;color:#be185d;padding:1px 6px;border-radius:5px;font-fam
   <div class="badges">
     <span class="badge">✔ Zero dependencies · Open by double-click</span>
     <span class="badge">✔ Data never leaves your machine</span>
-    <span class="badge">✔ 10+ text formats inter-convertible</span>
+    <span class="badge">✔ Rigaku · Bruker · Jade/MDI · generic text</span>
     <span class="badge">✔ Plot preview / wavelength conversion</span>
-    <span class="badge">✔ Verified on Rigaku &amp; Bruker data</span>
   </div>
 </header>
 
 <div class="scope">
-  <b>⚠ Validation scope —</b> the author has access to <b>Rigaku</b> and <b>Bruker</b> diffractometers only, so conversions have been verified <b>only between formats produced by these two vendors</b> — e.g. Rigaku SmartLab <code>.rasx</code> / <code>.ras</code> / <code>.asc</code> → Bruker <code>.raw</code> (ver.1) / <code>.uxd</code>, and the reverse text-format paths.
-  Readers and writers for other vendors (PANalytical <code>.xrdml</code>, Sietronics <code>.cpi</code>, Philips <code>.udf</code>, Jade <code>.mdi</code>, GSAS, Riet7 <code>.dat</code>) are implemented strictly from published open-source specifications (xylib / GSAS-II) but have <b>not been tested against real instrument files</b>.
-  Please check the converted output before relying on it for analysis or publication. Bug reports and sample files for untested formats are very welcome.
+  <b>⚠ Scope —</b> this release deliberately ships <b>only the formats the author can validate</b>. The author has access to <b>Rigaku</b> and <b>Bruker</b> diffractometers, and uses <b>MDI Jade</b> for analysis, so the supported set is limited to Rigaku (<code>.rasx</code> / <code>.ras</code> / <code>.asc</code>), Bruker (<code>.raw</code> ver.1 / <code>.uxd</code>), Jade MDI ASCII (<code>.mdi</code>) and generic numeric text (<code>.xy</code> / <code>.xye</code> / <code>.csv</code> / <code>.txt</code> / <code>.dat</code> / <code>.json</code>).
+  Round-trip conversion has been verified against <b>real Rigaku and Bruker instrument files</b>; the <code>.mdi</code> writer follows the MDI Jade manual and passes a read-back test, but has been checked with a smaller sample set.
+  Readers/writers for other vendors (PANalytical <code>.xrdml</code>, Sietronics <code>.cpi</code>, Philips <code>.udf</code>, GSAS, Riet7 <code>.dat</code>) were written but are <b>not shipped</b>, because they could not be tested against real instrument files. Sample files from other vendors are very welcome — open an issue and they can be re-enabled.
 </div>
 
 <section class="card">
   <h2><span class="n">1</span>Import data file</h2>
   <div id="drop">
     <b>Click to choose a file</b> or drag & drop a file here<br>
-    <span class="exts">Supported: .xy .xye .csv .txt .dat(Riet7) .cpi(Sietronics) .udf(Philips) .uxd(Bruker) .asc(Rigaku) .ras(Rigaku) .rasx(Rigaku SmartLab) .xrdml(PANalytical) .gsas/.gsa(GSAS) .mdi(Jade) .json and generic two-column text</span>
+    <span class="exts"><b>Rigaku</b> .rasx .ras .asc &nbsp;·&nbsp; <b>Bruker</b> .uxd &nbsp;·&nbsp; <b>Jade/MDI</b> .mdi &nbsp;·&nbsp; <b>Generic</b> .xy .xye .csv .txt .dat .json and any two-column numeric text</span>
   </div>
-  <input type="file" id="file" accept=".xy,.xye,.csv,.txt,.dat,.cpi,.udf,.uxd,.asc,.ras,.rasx,.xrdml,.gsas,.gsa,.mdi,.json,.plv,.xdd,.xda,.cin,.dbw">
+  <input type="file" id="file" accept=".rasx,.ras,.asc,.uxd,.mdi,.xy,.xye,.csv,.txt,.dat,.json,.prn,.xrd">
   <div class="info" id="info"></div>
   <div class="msg" id="msg"></div>
 </section>
@@ -147,24 +146,28 @@ code{background:#f1f5f9;color:#be185d;padding:1px 6px;border-radius:5px;font-fam
   <div class="row">
     <div class="field"><label>Output format</label>
       <select id="outFmt">
-        <option value="xy">XY two-column (.xy)</option>
-        <option value="xye">XYE three-column with error (.xye)</option>
-        <option value="csv">CSV comma-separated (.csv)</option>
-        <option value="dat">Riet7 DAT (.dat)</option>
-        <option value="cpi">Sietronics CPI (.cpi)</option>
-        <option value="udf">Philips UDF (.udf)</option>
-        <option value="uxd">Bruker UXD (.uxd)</option>
-        <option value="asc">Rigaku ASC (.asc)</option>
-        <option value="gsas">GSAS ESD (.gsa)</option>
-        <option value="xrdml">PANalytical XRDML (.xrdml)</option>
-        <option value="raw">Bruker RAW ver.1 (.raw)</option>
-        <option value="json">JSON (.json)</option>
-        <option value="dcsv">d-spacing table CSV (.csv)</option>
+        <optgroup label="Bruker">
+          <option value="raw">Bruker RAW ver.1 (.raw) — binary</option>
+          <option value="uxd">Bruker UXD (.uxd)</option>
+        </optgroup>
+        <optgroup label="Rigaku">
+          <option value="asc">Rigaku ASC (.asc)</option>
+        </optgroup>
+        <optgroup label="Jade / MDI">
+          <option value="mdi">MDI ASCII Pattern (.mdi)</option>
+        </optgroup>
+        <optgroup label="Generic">
+          <option value="xy">XY two-column (.xy)</option>
+          <option value="xye">XYE three-column with error (.xye)</option>
+          <option value="csv">CSV comma-separated (.csv)</option>
+          <option value="json">JSON (.json)</option>
+          <option value="dcsv">d-spacing table CSV (.csv)</option>
+        </optgroup>
       </select></div>
     <div class="field"><label>Output file name (no extension)</label><input type="text" id="outName" value="converted" style="min-width:220px"></div>
     <button class="btn-p" id="btnConv" disabled>Convert & download</button>
   </div>
-  <div class="note">For fixed-step formats (DAT/CPI/UDF/ASC/GSAS/XRDML/RAW), if the original step is non-uniform, the average step is written in the header. <b>Bruker RAW ver.1</b> is binary output (magic "RAW ", float32 intensity, little-endian, structure verified against the xylib library). <b>.rasx</b> (Rigaku SmartLab, ZIP container) input is supported: automatically detects UTF-16/UTF-8 encoded Profile data, correctly applies the attenuation factor (y = intensity × attenuation coefficient), and extracts the wavelength from the MesurementConditions XML into the RAW header. Data-quality checks follow the opXRD (arXiv:2503.05577v2) guidelines: warn on negative angles / fewer than 50 points, reject all-zero intensity / single unique angle.<br><b>Note:</b> only the Rigaku ↔ Bruker conversion paths have been validated against real instrument files; output for other vendors' formats should be checked before use.</div>
+  <div class="note">For fixed-step formats (RAW / ASC / MDI), if the original step is non-uniform the average step is written in the header. <b>Bruker RAW ver.1</b> is binary output (magic "RAW ", float32 intensity, little-endian, structure verified against the xylib library). <b>MDI ASCII</b> follows the MDI Jade layout: line 1 date + sample, line 2 <code>start step speed anode λ end nPoints</code>, then 8 intensities per line. <b>.rasx</b> (Rigaku SmartLab, ZIP container) input is supported: automatically detects UTF-16/UTF-8 encoded Profile data, correctly applies the attenuation factor (y = intensity × attenuation coefficient), and extracts the wavelength from the MesurementConditions XML into the output header. Data-quality checks follow the opXRD (arXiv:2503.05577v2) guidelines: warn on negative angles / fewer than 50 points, reject all-zero intensity / single unique angle.</div>
 </section>
 
 <footer>
@@ -188,7 +191,6 @@ function showWarn(t){ var m=$("msg"); m.className="msg warn"; m.textContent=t; }
 function clearMsg(){ $("msg").className="msg"; $("msg").textContent=""; }
 function fmt(v,d){ return Number(v).toFixed(d===undefined?4:d); }
 function avgStep(x){ return x.length>1 ? (x[x.length-1]-x[0])/(x.length-1) : 0; }
-function pad(s,w){ s=String(s); while(s.length<w) s=" "+s; return s; }
 
 /* ============ Parsers ============ */
 function genLinear(start, step, n){ var x=[]; for(var i=0;i<n;i++) x.push(start+i*step); return x; }
@@ -204,17 +206,6 @@ function parseGeneric(text){
   }
   if(x.length<3) throw "Could not parse two-column numeric data from the file";
   return {x:x,y:y,e:e.length===x.length?e:[],lambda:null};
-}
-
-function parseCPI(text){
-  var lines=text.split(/\r?\n/).map(function(s){return s.trim();});
-  if(!/^SIETRONICS/i.test(lines[0])) throw "Not a CPI file";
-  var start=parseFloat(lines[1]), end=parseFloat(lines[2]), step=parseFloat(lines[3]), lam=parseFloat(lines[4]);
-  var di=lines.findIndex(function(l){return /^SCANDATA/i.test(l);});
-  var y=[];
-  for(var i=di+1;i<lines.length;i++){ if(!lines[i]) continue; var v=nums(lines[i]); for(var j=0;j<v.length;j++) y.push(v[j]); }
-  var n=Math.round((end-start)/step)+1; if(y.length>n) y=y.slice(0,n);
-  return {x:genLinear(start,step,y.length), y:y, e:[], lambda:isFinite(lam)?lam:null};
 }
 
 function parseUXD(text){
@@ -272,89 +263,26 @@ function parseRAS(text){
   return {x:x,y:y,e:[],lambda:lam};
 }
 
-function parseUDF(text){
-  var flat=text.replace(/\r?\n/g,",");
-  var mR=/DataAngleRange\s*,\s*([-\d.]+)\s*,\s*([-\d.]+)/i.exec(flat);
-  var mS=/ScanStepSize\s*,\s*([-\d.]+)/i.exec(flat);
-  var mW=/LabdaAlpha1\s*,\s*([-\d.]+)/i.exec(flat) || /LambdaAlpha1\s*,\s*([-\d.]+)/i.exec(flat);
-  var idx=flat.search(/RawScan/i);
-  if(idx<0||!mR) throw "Not a UDF file";
-  var tail=flat.substring(idx); var endIdx=tail.indexOf("/"); if(endIdx>0) tail=tail.substring(0,endIdx);
-  var y=nums(tail.replace(/RawScan/i,""));
-  var start=parseFloat(mR[1]), end=parseFloat(mR[2]);
-  var step=mS?parseFloat(mS[1]):(y.length>1?(end-start)/(y.length-1):0);
-  return {x:genLinear(start,step,y.length), y:y, e:[], lambda:mW?parseFloat(mW[1]):null};
-}
-
-function parseXRDML(text){
-  var doc=new DOMParser().parseFromString(text,"application/xml");
-  if(doc.getElementsByTagName("parsererror").length) throw "XRDML parsing failed";
-  var lam=null;
-  var kA=doc.getElementsByTagName("kAlpha1");
-  if(kA.length) lam=parseFloat(kA[0].textContent);
-  var ints=doc.getElementsByTagName("intensities");
-  if(!ints.length) ints=doc.getElementsByTagName("counts");
-  if(!ints.length) throw "No intensities/counts node in XRDML";
-  var y=nums(ints[0].textContent);
-  var start=null,end=null, ps=doc.getElementsByTagName("positions");
-  for(var i=0;i<ps.length;i++){
-    if((ps[i].getAttribute("axis")||"")==="2Theta"){
-      var sp=ps[i].getElementsByTagName("startPosition"), ep=ps[i].getElementsByTagName("endPosition");
-      if(sp.length&&ep.length){ start=parseFloat(sp[0].textContent); end=parseFloat(ep[0].textContent); }
-      var lp=ps[i].getElementsByTagName("listPositions");
-      if(lp.length){ var xs=nums(lp[0].textContent); if(xs.length===y.length) return {x:xs,y:y,e:[],lambda:lam}; }
-      break;
-    }
-  }
-  if(start===null) throw "No 2Theta axis range found in XRDML";
-  var step=y.length>1?(end-start)/(y.length-1):0;
-  return {x:genLinear(start,step,y.length), y:y, e:[], lambda:lam};
-}
-
-function parseRiet7(text){
-  var lines=text.split(/\r?\n/), hdr=null, vals=[], started=false;
-  for(var i=0;i<lines.length;i++){
-    var L=lines[i].trim(); if(!L) continue;
-    if(!started){
-      var v=nums(L);
-      if(v.length===3 && v[1]<1 && v[1]>0 && v[2]>v[0]){ hdr=v; started=true; continue; }
-      if(v.length>=3 && i<4){ continue; } /* header line */
-      continue;
-    }
-    if(isNumLine(L)) nums(L).forEach(function(t){vals.push(t);});
-  }
-  if(!hdr) return parseGeneric(text);
-  var start=hdr[0], step=hdr[1], end=hdr[2];
-  var n=Math.round((end-start)/step)+1;
-  if(vals.length>n) vals=vals.slice(0,n);
-  return {x:genLinear(start,step,vals.length), y:vals, e:[], lambda:null};
-}
-
-function parseGSAS(text){
-  var lines=text.split(/\r?\n/), bi=-1;
-  for(var i=0;i<lines.length;i++){ if(/^BANK/i.test(lines[i].trim())){ bi=i; break; } }
-  if(bi<0) throw "No BANK line found in GSAS";
-  var h=nums(lines[bi]);
-  var npts=h[1], start=h[3]/100, step=h[4]/100;
-  var isESD=/ESD/i.test(lines[bi]);
-  var vals=[];
-  for(var j=bi+1;j<lines.length;j++){ if(isNumLine(lines[j])) nums(lines[j]).forEach(function(v){vals.push(v);}); }
-  var y=[],e=[];
-  if(isESD || Math.abs(vals.length-2*npts)<Math.abs(vals.length-npts)){
-    for(var k=0;k+1<vals.length && y.length<npts;k+=2){ y.push(vals[k]); e.push(vals[k+1]); }
-  } else { y=vals.slice(0,npts); }
-  return {x:genLinear(start,step,y.length), y:y, e:e, lambda:null};
-}
-
+/* MDI ASCII (Jade). Layout per the MDI Jade manual:
+   line 1 : date, sample name
+   line 2 : start2theta  step  scanSpeed  anode  wavelength  end2theta  nPoints
+   line 3+: intensities only, 8 values per line, no angle column
+   The anode field is normally alphabetic ("Cu"), so nums() on line 2 yields
+   [start, step, speed, lambda, end, nPoints]. We do not trust a fixed index
+   for the wavelength: we scan the trailing numbers for a plausible Angstrom
+   value instead, which also survives files that store the anode numerically.
+   The 2-theta axis is always rebuilt from start+i*step, so a mis-read
+   end/nPoints field cannot corrupt the data. */
 function parseMDI(text){
   var lines=text.split(/\r?\n/);
   for(var i=0;i<Math.min(lines.length,5);i++){
     var v=nums(lines[i]);
-    if(v.length>=6 && v[1]>0 && v[1]<1){
-      var start=v[0], step=v[1], end=v[v.length-1];
+    if(v.length>=5 && v[1]>0 && v[1]<1){
+      var start=v[0], step=v[1];
+      var lam=null;
+      for(var k=2;k<v.length;k++){ if(v[k]>0.4 && v[k]<3.0 && v[k]!==1 && v[k]!==step){ lam=v[k]; break; } }
       var y=[]; for(var j=i+1;j<lines.length;j++){ if(isNumLine(lines[j])) nums(lines[j]).forEach(function(t){y.push(t);}); }
-      var n=Math.round((end-start)/step)+1; if(y.length>n) y=y.slice(0,n);
-      if(y.length>2) return {x:genLinear(start,step,y.length), y:y, e:[], lambda:(v[3]>0.5&&v[3]<3)?v[3]:null};
+      if(y.length>2) return {x:genLinear(start,step,y.length), y:y, e:[], lambda:lam};
     }
   }
   return parseGeneric(text);
@@ -369,7 +297,7 @@ function parseJSONfmt(text){
 
 function parseFile(name,text){
   var ext=(name.split(".").pop()||"").toLowerCase();
-  var map={cpi:parseCPI,uxd:parseUXD,asc:parseASC,ras:parseRAS,udf:parseUDF,xrdml:parseXRDML,dat:parseRiet7,gsas:parseGSAS,gsa:parseGSAS,mdi:parseMDI,json:parseJSONfmt};
+  var map={uxd:parseUXD,asc:parseASC,ras:parseRAS,mdi:parseMDI,json:parseJSONfmt};
   var fn=map[ext];
   if(fn){ try{ var r=fn(text); r.srcFmt=ext.toUpperCase(); return r; }catch(e1){ var r2=parseGeneric(text); r2.srcFmt=ext.toUpperCase()+"(generic parse)"; return r2; } }
   var r3=parseGeneric(text); r3.srcFmt=(ext||"txt").toUpperCase(); return r3;
@@ -689,25 +617,6 @@ var writers={
   xy:function(){ var L=[]; for(var i=0;i<D.x.length;i++) L.push(fmt(D.x[i],4)+"\t"+fmt(D.y[i],3)); return {ext:"xy",text:L.join("\r\n")}; },
   xye:function(){ var L=[]; for(var i=0;i<D.x.length;i++) L.push(fmt(D.x[i],4)+"\t"+fmt(D.y[i],3)+"\t"+fmt(esdOf(i),3)); return {ext:"xye",text:L.join("\r\n")}; },
   csv:function(){ var L=["2theta,intensity"]; for(var i=0;i<D.x.length;i++) L.push(fmt(D.x[i],4)+","+fmt(D.y[i],3)); return {ext:"csv",text:L.join("\r\n")}; },
-  dat:function(){
-    var s=avgStep(D.x);
-    var head=fmt(D.x[0],4)+" "+fmt(s,6)+" "+fmt(D.x[D.x.length-1],4);
-    return {ext:"dat",text:head+"\r\n"+lineJoin(D.y,8,function(v){return fmt(v,2);})};
-  },
-  cpi:function(){
-    var s=avgStep(D.x), lam=D.lambda||1.540598;
-    var L=["SIETRONICS XRD SCAN",fmt(D.x[0],4),fmt(D.x[D.x.length-1],4),fmt(s,6),fmt(lam,6),new Date().toISOString().slice(0,10),"1.0","XRD-FileConv","SCANDATA"];
-    D.y.forEach(function(v){L.push(fmt(v,2));});
-    return {ext:"cpi",text:L.join("\r\n")};
-  },
-  udf:function(){
-    var s=avgStep(D.x), lam=D.lambda||1.540598;
-    var head="SampleIdent,XRD-FileConv,/\r\nLabdaAlpha1, "+fmt(lam,6)+",/\r\nDataAngleRange, "+fmt(D.x[0],4)+", "+fmt(D.x[D.x.length-1],4)+",/\r\nScanStepSize, "+fmt(s,6)+",/\r\nRawScan";
-    var body=[],row=[];
-    for(var i=0;i<D.y.length;i++){ row.push(fmt(D.y[i],1)); if(row.length===8){ body.push(row.join(", ")); row=[]; } }
-    if(row.length) body.push(row.join(", "));
-    return {ext:"udf",text:head+"\r\n"+body.join(",\r\n")+"\r\n/"};
-  },
   uxd:function(){
     var s=avgStep(D.x);
     var L=["; XRD-FileConv export","_DRIVE = COUPLED","_STEPSIZE = "+fmt(s,6),"_START = "+fmt(D.x[0],4),"_2THETACOUNTS"];
@@ -720,31 +629,18 @@ var writers={
     L.push(lineJoin(D.y,5,function(v){return fmt(v,2);}));
     return {ext:"asc",text:L.join("\r\n")+"\r\n*END"};
   },
-  gsas:function(){
-    var s=avgStep(D.x), n=D.y.length, nrec=Math.ceil(n/5);
-    var L=["Converted by XRD-FileConv",
-      "BANK 1 "+n+" "+nrec+" CONST "+fmt(D.x[0]*100,2)+" "+fmt(s*100,2)+" 0 0 ESD"];
-    var row=[];
-    for(var i=0;i<n;i++){
-      row.push(pad(fmt(D.y[i],1),8)+pad(fmt(esdOf(i),1),8));
-      if(row.length===5){ L.push(row.join("")); row=[]; }
-    }
-    if(row.length) L.push(row.join(""));
-    return {ext:"gsa",text:L.join("\r\n")};
-  },
-  xrdml:function(){
-    var lam=D.lambda||1.540598;
-    var t='<?xml version="1.0" encoding="UTF-8"?>\r\n'
-      +'<xrdMeasurements xmlns="http://www.xrdml.com/XRDMeasurement/1.0" status="Completed">\r\n'
-      +' <xrdMeasurement measurementType="Scan" status="Completed">\r\n'
-      +'  <usedWavelength intended="K-Alpha 1"><kAlpha1 unit="Angstrom">'+fmt(lam,6)+'</kAlpha1><kAlpha2 unit="Angstrom">'+fmt(lam,6)+'</kAlpha2><kBeta unit="Angstrom">'+fmt(lam,6)+'</kBeta><ratioKAlpha2KAlpha1>0.5</ratioKAlpha2KAlpha1></usedWavelength>\r\n'
-      +'  <scan appendNumber="0" mode="Continuous" scanAxis="Gonio" status="Completed">\r\n'
-      +'   <dataPoints>\r\n'
-      +'    <positions axis="2Theta" unit="deg"><startPosition>'+fmt(D.x[0],4)+'</startPosition><endPosition>'+fmt(D.x[D.x.length-1],4)+'</endPosition></positions>\r\n'
-      +'    <commonCountingTime unit="seconds">1.00</commonCountingTime>\r\n'
-      +'    <intensities unit="counts">'+D.y.map(function(v){return fmt(v,0);}).join(" ")+'</intensities>\r\n'
-      +'   </dataPoints>\r\n  </scan>\r\n </xrdMeasurement>\r\n</xrdMeasurements>';
-    return {ext:"xrdml",text:t};
+  mdi:function(){
+    /* MDI ASCII (Jade), per the MDI Jade manual:
+       line 1 : date, sample name
+       line 2 : start  step  scanSpeed  anode  wavelength  end  nPoints
+       line 3+: intensities only, 8 per line, no angle column */
+    var s=avgStep(D.x), lam=D.lambda||1.540598, n=D.y.length;
+    var anodes=[["Cu",1.540598],["Co",1.789007],["Fe",1.936042],["Cr",2.289760],["Mo",0.709319]];
+    var anode="Cu", best=1e9;
+    anodes.forEach(function(a){ var d=Math.abs(a[1]-lam); if(d<best){ best=d; anode=a[0]; } });
+    var head1=new Date().toISOString().slice(0,10)+" "+(D.name||"sample").replace(/\.[^.]+$/,"");
+    var head2=fmt(D.x[0],4)+" "+fmt(s,6)+" 1.0 "+anode+" "+fmt(lam,6)+" "+fmt(D.x[n-1],4)+" "+n;
+    return {ext:"mdi",text:head1+"\r\n"+head2+"\r\n"+lineJoin(D.y,8,function(v){return fmt(v,1);})};
   },
   raw:function(){
     /* Bruker RAW ver.1 (little-endian). Structure verified against xylib bruker_raw.cpp load_version1:
