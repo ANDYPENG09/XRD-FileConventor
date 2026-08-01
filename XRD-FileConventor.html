@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<!--
+  XRD-FileConventor — Powder X-ray diffraction data format converter (standalone offline edition)
+  Copyright (c) 2026 PENG
+
+  MIT License
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XRD-FileConventor — Powder XRD data format converter (standalone offline edition)</title>
+<style>
+:root{
+  --bg:#f5f7fa; --card:#fff; --ink:#1f2733; --muted:#5b6675; --line:#e3e8ef;
+  --brand:#2563eb; --brand-dark:#1e40af; --brand-soft:#eef4ff;
+  --ok:#0f9d58; --ok-soft:#e6f5ec; --warn:#d97706; --warn-soft:#fef3e2; --err:#dc2626; --err-soft:#fdecec;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI","Microsoft YaHei",Arial,sans-serif;font-size:15px;line-height:1.6}
+.wrap{max-width:1080px;margin:0 auto;padding:28px 20px 60px}
+header{background:linear-gradient(135deg,#2563eb,#1e40af);color:#fff;border-radius:16px;padding:26px 32px;margin-bottom:22px;box-shadow:0 8px 24px rgba(37,99,235,.22)}
+header h1{margin:0 0 6px;font-size:24px}
+header p{margin:2px 0;font-size:13.5px;opacity:.92}
+.badges{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+.badge{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);padding:2px 11px;border-radius:999px;font-size:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 24px;margin-bottom:18px;box-shadow:0 1px 3px rgba(16,24,40,.04)}
+h2{font-size:17px;margin:0 0 12px;display:flex;align-items:center;gap:9px}
+h2 .n{background:var(--brand);color:#fff;width:24px;height:24px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex:none}
+#drop{border:2px dashed #b6c6e3;border-radius:12px;padding:34px 20px;text-align:center;color:var(--muted);cursor:pointer;transition:.15s;background:var(--brand-soft)}
+#drop.hover{border-color:var(--brand);background:#e0ecff}
+#drop b{color:var(--brand);font-size:16px}
+#drop .exts{font-size:12px;margin-top:8px;color:#7c8aa0}
+input[type=file]{display:none}
+.info{display:none;margin-top:14px;background:var(--ok-soft);border:1px solid #bfe3cb;border-radius:10px;padding:12px 16px;font-size:14px}
+.info table{border-collapse:collapse}
+.info td{padding:2px 18px 2px 0;color:#0b5c34}
+.info td:first-child{color:#4c7a60;font-size:13px}
+.msg{display:none;margin-top:12px;border-radius:10px;padding:10px 15px;font-size:14px}
+.msg.err{background:var(--err-soft);border:1px solid #f3c2c2;color:#a41818;display:block}
+.msg.warn{background:var(--warn-soft);border:1px solid #f0d6a8;color:#8a5a08;display:block}
+.row{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:12.5px;color:var(--muted)}
+select,input[type=text],input[type=number]{border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:14px;background:#fff;color:var(--ink);outline:none;min-width:130px}
+select:focus,input:focus{border-color:var(--brand)}
+button{border:none;border-radius:9px;padding:9px 20px;font-size:14px;font-weight:600;cursor:pointer;transition:.15s}
+.btn-p{background:var(--brand);color:#fff}
+.btn-p:hover{background:var(--brand-dark)}
+.btn-s{background:#eef2f7;color:#334155}
+.btn-s:hover{background:#e2e8f0}
+button:disabled{opacity:.45;cursor:not-allowed}
+#chartBox{position:relative}
+canvas{width:100%;height:340px;display:block;border:1px solid var(--line);border-radius:10px;background:#fff}
+.chartbar{display:flex;gap:10px;align-items:center;margin-top:8px;font-size:12.5px;color:var(--muted);flex-wrap:wrap}
+.chartbar button{padding:4px 12px;font-size:12.5px}
+#tip{position:absolute;pointer-events:none;background:#1f2733;color:#fff;font-size:12px;padding:3px 9px;border-radius:6px;display:none;white-space:nowrap;z-index:5}
+.note{background:var(--warn-soft);border-left:4px solid var(--warn);border-radius:8px;padding:10px 14px;margin-top:12px;font-size:13px;color:#7c4a0a}
+footer{margin-top:26px}
+.footer-credit{background:linear-gradient(135deg,#1e40af,#2563eb);color:#fff;text-align:center;padding:9px 16px;border-radius:10px;font-size:12.5px;letter-spacing:.3px;margin-bottom:10px;box-shadow:0 2px 8px rgba(37,99,235,.18)}
+.footer-credit .sep{opacity:.45;margin:0 5px;font-weight:300}
+.footer-info{text-align:center;color:var(--muted);font-size:12px;line-height:1.7}
+code{background:#f1f5f9;color:#be185d;padding:1px 6px;border-radius:5px;font-family:Consolas,monospace;font-size:12.5px}
+@media(max-width:640px){header{padding:20px}.wrap{padding:16px 10px 40px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>XRD-FileConventor</h1>
+  <p>Powder X-ray diffraction (XRD) data format converter · Standalone offline edition · Core functionality re-implemented in JavaScript</p>
+  <p>Format specifications adapted from open-source projects: xylib (LGPL) · GSAS-II (BSD-3) · opXRD (CC BY 4.0)</p>
+  <div class="badges">
+    <span class="badge">✔ Zero dependencies · Open by double-click</span>
+    <span class="badge">✔ Data never leaves your machine</span>
+    <span class="badge">✔ 10+ text formats inter-convertible</span>
+    <span class="badge">✔ Plot preview / wavelength conversion</span>
+  </div>
+</header>
+
+<section class="card">
+  <h2><span class="n">1</span>Import data file</h2>
+  <div id="drop">
+    <b>Click to choose a file</b> or drag & drop a file here<br>
+    <span class="exts">Supported: .xy .xye .csv .txt .dat(Riet7) .cpi(Sietronics) .udf(Philips) .uxd(Bruker) .asc(Rigaku) .ras(Rigaku) .rasx(Rigaku SmartLab) .xrdml(PANalytical) .gsas/.gsa(GSAS) .mdi(Jade) .json and generic two-column text</span>
+  </div>
+  <input type="file" id="file" accept=".xy,.xye,.csv,.txt,.dat,.cpi,.udf,.uxd,.asc,.ras,.rasx,.xrdml,.gsas,.gsa,.mdi,.json,.plv,.xdd,.xda,.cin,.dbw">
+  <div class="info" id="info"></div>
+  <div class="msg" id="msg"></div>
+</section>
+
+<section class="card">
+  <h2><span class="n">2</span>Plot preview</h2>
+  <div id="chartBox">
+    <canvas id="chart" width="1040" height="340"></canvas>
+    <div id="tip"></div>
+  </div>
+  <div class="chartbar">
+    <span>Drag to box-zoom · Double-click to reset</span>
+    <button class="btn-s" id="btnReset">Reset zoom</button>
+    <label><input type="checkbox" id="ckSqrt"> √Intensity (sqrt)</label>
+  </div>
+</section>
+
+<section class="card">
+  <h2><span class="n">3</span>Wavelength conversion (optional)</h2>
+  <div class="row">
+    <div class="field"><label>Current wavelength λ (Å)</label><input type="number" id="lamFrom" step="0.000001" value="1.540598"></div>
+    <div class="field"><label>Target anode / wavelength</label>
+      <select id="lamToSel">
+        <option value="1.540598">Cu Kα1 (1.540598)</option>
+        <option value="1.541838">Cu Kα avg (1.541838)</option>
+        <option value="1.789007">Co Kα1 (1.789007)</option>
+        <option value="1.936042">Fe Kα1 (1.936042)</option>
+        <option value="2.289760">Cr Kα1 (2.289760)</option>
+        <option value="0.709319">Mo Kα1 (0.709319)</option>
+        <option value="custom">Custom…</option>
+      </select></div>
+    <div class="field" id="lamCustomBox" style="display:none"><label>Custom λ (Å)</label><input type="number" id="lamCustom" step="0.000001" value="1.0"></div>
+    <button class="btn-s" id="btnLam" disabled>Apply wavelength conversion</button>
+  </div>
+  <div class="note">Conversion formula: 2θ′ = 2·asin( (λ′/λ)·sin(2θ/2) ). Data points outside the domain of sin are automatically clipped.</div>
+</section>
+
+<section class="card">
+  <h2><span class="n">4</span>Convert & export</h2>
+  <div class="row">
+    <div class="field"><label>Output format</label>
+      <select id="outFmt">
+        <option value="xy">XY two-column (.xy)</option>
+        <option value="xye">XYE three-column with error (.xye)</option>
+        <option value="csv">CSV comma-separated (.csv)</option>
+        <option value="dat">Riet7 DAT (.dat)</option>
+        <option value="cpi">Sietronics CPI (.cpi)</option>
+        <option value="udf">Philips UDF (.udf)</option>
+        <option value="uxd">Bruker UXD (.uxd)</option>
+        <option value="asc">Rigaku ASC (.asc)</option>
+        <option value="gsas">GSAS ESD (.gsa)</option>
+        <option value="xrdml">PANalytical XRDML (.xrdml)</option>
+        <option value="raw">Bruker RAW ver.1 (.raw)</option>
+        <option value="json">JSON (.json)</option>
+        <option value="dcsv">d-spacing table CSV (.csv)</option>
+      </select></div>
+    <div class="field"><label>Output file name (no extension)</label><input type="text" id="outName" value="converted" style="min-width:220px"></div>
+    <button class="btn-p" id="btnConv" disabled>Convert & download</button>
+  </div>
+  <div class="note">For fixed-step formats (DAT/CPI/UDF/ASC/GSAS/XRDML/RAW), if the original step is non-uniform, the average step is written in the header. <b>Bruker RAW ver.1</b> is binary output (magic "RAW ", float32 intensity, little-endian, structure verified against the xylib library). <b>.rasx</b> (Rigaku SmartLab, ZIP container) input is supported: automatically detects UTF-16/UTF-8 encoded Profile data, correctly applies the attenuation factor (y = intensity × attenuation coefficient), and extracts the wavelength from the MesurementConditions XML into the RAW header. Data-quality checks follow the opXRD (arXiv:2503.05577v2) guidelines: warn on negative angles / fewer than 50 points, reject all-zero intensity / single unique angle.</div>
+</section>
+
+<footer>
+  <div class="footer-credit">Made by: PENG<span class="sep"> | </span>Built with: VibeCoding<span class="sep"> | </span>License: MIT</div>
+  <div class="footer-info">XRD-FileConventor · Single-file HTML · All processing runs locally in your browser, no data uploaded · MIT License</div>
+</footer>
+</div>
+
+<script>
+"use strict";
+/* ============ Global state ============ */
+var D = { x:[], y:[], e:[], lambda:null, name:"", srcFmt:"" };
+var view = { x0:null, x1:null };
+
+/* ============ Utilities ============ */
+function $(id){ return document.getElementById(id); }
+function nums(s){ var m = s.match(/-?\d+\.?\d*(?:[eE][+-]?\d+)?/g); return m ? m.map(Number) : []; }
+function isNumLine(s){ s=s.trim(); return s.length>0 && /^[-+0-9.eE,;\s\t]+$/.test(s) && /\d/.test(s); }
+function showErr(t){ var m=$("msg"); m.className="msg err"; m.textContent=t; }
+function showWarn(t){ var m=$("msg"); m.className="msg warn"; m.textContent=t; }
+function clearMsg(){ $("msg").className="msg"; $("msg").textContent=""; }
+function fmt(v,d){ return Number(v).toFixed(d===undefined?4:d); }
+function avgStep(x){ return x.length>1 ? (x[x.length-1]-x[0])/(x.length-1) : 0; }
+function pad(s,w){ s=String(s); while(s.length<w) s=" "+s; return s; }
+
+/* ============ Parsers ============ */
+function genLinear(start, step, n){ var x=[]; for(var i=0;i<n;i++) x.push(start+i*step); return x; }
+
+function parseGeneric(text){
+  var x=[],y=[],e=[], lines=text.split(/\r?\n/);
+  for(var i=0;i<lines.length;i++){
+    var L=lines[i].trim();
+    if(!L || /^[#'!;\/%*]/.test(L)) continue;
+    if(!isNumLine(L.replace(/[,;]/g," "))) continue;
+    var v=nums(L);
+    if(v.length>=2){ x.push(v[0]); y.push(v[1]); if(v.length>=3) e.push(v[2]); }
+  }
+  if(x.length<3) throw "Could not parse two-column numeric data from the file";
+  return {x:x,y:y,e:e.length===x.length?e:[],lambda:null};
+}
+
+function parseCPI(text){
+  var lines=text.split(/\r?\n/).map(function(s){return s.trim();});
+  if(!/^SIETRONICS/i.test(lines[0])) throw "Not a CPI file";
+  var start=parseFloat(lines[1]), end=parseFloat(lines[2]), step=parseFloat(lines[3]), lam=parseFloat(lines[4]);
+  var di=lines.findIndex(function(l){return /^SCANDATA/i.test(l);});
+  var y=[];
+  for(var i=di+1;i<lines.length;i++){ if(!lines[i]) continue; var v=nums(lines[i]); for(var j=0;j<v.length;j++) y.push(v[j]); }
+  var n=Math.round((end-start)/step)+1; if(y.length>n) y=y.slice(0,n);
+  return {x:genLinear(start,step,y.length), y:y, e:[], lambda:isFinite(lam)?lam:null};
+}
+
+function parseUXD(text){
+  var lines=text.split(/\r?\n/), start=null, step=null, lam=null, data=[];
+  for(var i=0;i<lines.length;i++){
+    var L=lines[i].trim(); if(!L) continue;
+    if(L[0]==="_"){
+      var kv=L.split("="); var k=kv[0].toUpperCase();
+      if(k.indexOf("_START")===0 && start===null) start=parseFloat(kv[1]);
+      if((k.indexOf("_STEPSIZE")===0||k.indexOf("_STEP_SIZE")===0) && step===null) step=parseFloat(kv[1]);
+      if(k.indexOf("_WL1")===0||k.indexOf("_LAMBDA")===0) lam=parseFloat(kv[1]);
+      continue;
+    }
+    if(/^[;#']/.test(L)) continue;
+    if(isNumLine(L)) data.push(nums(L));
+  }
+  if(!data.length) throw "No data found in UXD";
+  var twoCol = data.filter(function(r){return r.length>=2;}).length > data.length*0.8;
+  if(twoCol){
+    var x=[],y=[]; data.forEach(function(r){ if(r.length>=2){x.push(r[0]);y.push(r[1]);} });
+    return {x:x,y:y,e:[],lambda:lam};
+  }
+  var y2=[]; data.forEach(function(r){ r.forEach(function(v){y2.push(v);}); });
+  if(start===null||step===null) throw "UXD missing _START/_STEPSIZE and not two-column data";
+  return {x:genLinear(start,step,y2.length), y:y2, e:[], lambda:lam};
+}
+
+function parseASC(text){
+  var lines=text.split(/\r?\n/), start=null, step=null, lam=null, data=[];
+  for(var i=0;i<lines.length;i++){
+    var L=lines[i].trim(); if(!L) continue;
+    if(L[0]==="*"){
+      var kv=L.substring(1).split("="); var k=kv[0].trim().toUpperCase();
+      if(k==="START") start=parseFloat(kv[1]);
+      if(k==="STEP") step=parseFloat(kv[1]);
+      if(k==="WAVE_LENGTH1"||k==="WAVELENGTH") lam=parseFloat(kv[1]);
+      continue;
+    }
+    if(isNumLine(L.replace(/,/g," "))) nums(L).forEach(function(v){data.push(v);});
+  }
+  if(start===null||step===null){ return parseGeneric(text); }
+  return {x:genLinear(start,step,data.length), y:data, e:[], lambda:lam};
+}
+
+function parseRAS(text){
+  var lines=text.split(/\r?\n/), inData=false, x=[], y=[], lam=null;
+  for(var i=0;i<lines.length;i++){
+    var L=lines[i].trim();
+    if(/^\*RAS_INT_START/i.test(L)){ inData=true; continue; }
+    if(/^\*RAS_INT_END/i.test(L)){ inData=false; continue; }
+    if(/^\*HW_XG_WAVE_LENGTH_ALPHA1/i.test(L)){ var v0=nums(L); if(v0.length) lam=v0[v0.length-1]; continue; }
+    if(inData && isNumLine(L)){ var v=nums(L); if(v.length>=2){ x.push(v[0]); y.push(v[1]*(v.length>=3&&v[2]>0?v[2]:1)); } }
+  }
+  if(!x.length) throw "No data segment found in RAS";
+  return {x:x,y:y,e:[],lambda:lam};
+}
+
+function parseUDF(text){
+  var flat=text.replace(/\r?\n/g,",");
+  var mR=/DataAngleRange\s*,\s*([-\d.]+)\s*,\s*([-\d.]+)/i.exec(flat);
+  var mS=/ScanStepSize\s*,\s*([-\d.]+)/i.exec(flat);
+  var mW=/LabdaAlpha1\s*,\s*([-\d.]+)/i.exec(flat) || /LambdaAlpha1\s*,\s*([-\d.]+)/i.exec(flat);
+  var idx=flat.search(/RawScan/i);
+  if(idx<0||!mR) throw "Not a UDF file";
+  var tail=flat.substring(idx); var endIdx=tail.indexOf("/"); if(endIdx>0) tail=tail.substring(0,endIdx);
+  var y=nums(tail.replace(/RawScan/i,""));
+  var start=parseFloat(mR[1]), end=parseFloat(mR[2]);
+  var step=mS?parseFloat(mS[1]):(y.length>1?(end-start)/(y.length-1):0);
+  return {x:genLinear(start,step,y.length), y:y, e:[], lambda:mW?parseFloat(mW[1]):null};
+}
+
+function parseXRDML(text){
+  var doc=new DOMParser().parseFromString(text,"application/xml");
+  if(doc.getElementsByTagName("parsererror").length) throw "XRDML parsing failed";
+  var lam=null;
+  var kA=doc.getElementsByTagName("kAlpha1");
+  if(kA.length) lam=parseFloat(kA[0].textContent);
+  var ints=doc.getElementsByTagName("intensities");
+  if(!ints.length) ints=doc.getElementsByTagName("counts");
+  if(!ints.length) throw "No intensities/counts node in XRDML";
+  var y=nums(ints[0].textContent);
+  var start=null,end=null, ps=doc.getElementsByTagName("positions");
+  for(var i=0;i<ps.length;i++){
+    if((ps[i].getAttribute("axis")||"")==="2Theta"){
+      var sp=ps[i].getElementsByTagName("startPosition"), ep=ps[i].getElementsByTagName("endPosition");
+      if(sp.length&&ep.length){ start=parseFloat(sp[0].textContent); end=parseFloat(ep[0].textContent); }
+      var lp=ps[i].getElementsByTagName("listPositions");
+      if(lp.length){ var xs=nums(lp[0].textContent); if(xs.length===y.length) return {x:xs,y:y,e:[],lambda:lam}; }
+      break;
+    }
+  }
+  if(start===null) throw "No 2Theta axis range found in XRDML";
+  var step=y.length>1?(end-start)/(y.length-1):0;
+  return {x:genLinear(start,step,y.length), y:y, e:[], lambda:lam};
+}
+
+function parseRiet7(text){
+  var lines=text.split(/\r?\n/), hdr=null, vals=[], started=false;
+  for(var i=0;i<lines.length;i++){
+    var L=lines[i].trim(); if(!L) continue;
+    if(!started){
+      var v=nums(L);
+      if(v.length===3 && v[1]<1 && v[1]>0 && v[2]>v[0]){ hdr=v; started=true; continue; }
+      if(v.length>=3 && i<4){ continue; } /* header line */
+      continue;
+    }
+    if(isNumLine(L)) nums(L).forEach(function(t){vals.push(t);});
+  }
+  if(!hdr) return parseGeneric(text);
+  var start=hdr[0], step=hdr[1], end=hdr[2];
+  var n=Math.round((end-start)/step)+1;
+  if(vals.length>n) vals=vals.slice(0,n);
+  return {x:genLinear(start,step,vals.length), y:vals, e:[], lambda:null};
+}
+
+function parseGSAS(text){
+  var lines=text.split(/\r?\n/), bi=-1;
+  for(var i=0;i<lines.length;i++){ if(/^BANK/i.test(lines[i].trim())){ bi=i; break; } }
+  if(bi<0) throw "No BANK line found in GSAS";
+  var h=nums(lines[bi]);
+  var npts=h[1], start=h[3]/100, step=h[4]/100;
+  var isESD=/ESD/i.test(lines[bi]);
+  var vals=[];
+  for(var j=bi+1;j<lines.length;j++){ if(isNumLine(lines[j])) nums(lines[j]).forEach(function(v){vals.push(v);}); }
+  var y=[],e=[];
+  if(isESD || Math.abs(vals.length-2*npts)<Math.abs(vals.length-npts)){
+    for(var k=0;k+1<vals.length && y.length<npts;k+=2){ y.push(vals[k]); e.push(vals[k+1]); }
+  } else { y=vals.slice(0,npts); }
+  return {x:genLinear(start,step,y.length), y:y, e:e, lambda:null};
+}
+
+function parseMDI(text){
+  var lines=text.split(/\r?\n/);
+  for(var i=0;i<Math.min(lines.length,5);i++){
+    var v=nums(lines[i]);
+    if(v.length>=6 && v[1]>0 && v[1]<1){
+      var start=v[0], step=v[1], end=v[v.length-1];
+      var y=[]; for(var j=i+1;j<lines.length;j++){ if(isNumLine(lines[j])) nums(lines[j]).forEach(function(t){y.push(t);}); }
+      var n=Math.round((end-start)/step)+1; if(y.length>n) y=y.slice(0,n);
+      if(y.length>2) return {x:genLinear(start,step,y.length), y:y, e:[], lambda:(v[3]>0.5&&v[3]<3)?v[3]:null};
+    }
+  }
+  return parseGeneric(text);
+}
+
+function parseJSONfmt(text){
+  var o=JSON.parse(text);
+  var x=o.twoTheta||o.x||o.angles, y=o.intensity||o.y||o.counts;
+  if(!x||!y||x.length!==y.length) throw "JSON does not contain twoTheta/intensity arrays";
+  return {x:x,y:y,e:o.esd||[],lambda:o.lambda||null};
+}
+
+function parseFile(name,text){
+  var ext=(name.split(".").pop()||"").toLowerCase();
+  var map={cpi:parseCPI,uxd:parseUXD,asc:parseASC,ras:parseRAS,udf:parseUDF,xrdml:parseXRDML,dat:parseRiet7,gsas:parseGSAS,gsa:parseGSAS,mdi:parseMDI,json:parseJSONfmt};
+  var fn=map[ext];
+  if(fn){ try{ var r=fn(text); r.srcFmt=ext.toUpperCase(); return r; }catch(e1){ var r2=parseGeneric(text); r2.srcFmt=ext.toUpperCase()+"(generic parse)"; return r2; } }
+  var r3=parseGeneric(text); r3.srcFmt=(ext||"txt").toUpperCase(); return r3;
+}
+
+/* ============ ZIP reading (RASX, zero-dependency, native DecompressionStream) ============ */
+/* BOM-adaptive decoding: RASX Profile0.txt is often UTF-16 LE encoded (BOM 0xFF 0xFE).
+   Decoding as utf-8 corrupts all values → RASX→RAW data loss. Here we auto-detect the BOM. */
+function decodeText(u8){
+  if(u8.length>=2 && u8[0]===0xFF && u8[1]===0xFE){
+    return new TextDecoder("utf-16le").decode(u8.subarray(2));
+  }
+  if(u8.length>=2 && u8[0]===0xFE && u8[1]===0xFF){
+    return new TextDecoder("utf-16be").decode(u8.subarray(2));
+  }
+  if(u8.length>=3 && u8[0]===0xEF && u8[1]===0xBB && u8[2]===0xBF){
+    return new TextDecoder("utf-8").decode(u8.subarray(3));
+  }
+  return new TextDecoder("utf-8").decode(u8);
+}
+/* Extract wavelength (Å) from RASX MesurementConditions*.xml; supports multiple field names and nm/Å units */
+function extractRASXWavelength(xml){
+  var m = /<WavelengthKalpha1[^>]*>\s*([\d.]+)\s*<\/WavelengthKalpha1>/i.exec(xml);
+  if(!m) m = /<WavelengthKalpha2[^>]*>\s*([\d.]+)\s*<\/WavelengthKalpha2>/i.exec(xml);
+  if(!m) m = /<(?:Wavelength|Lambda1|K_Alpha1|TargetKalpha1)[^>]*>\s*([\d.]+)\s*</i.exec(xml);
+  if(!m) return null;
+  var lam = parseFloat(m[1]);
+  if(!(lam>0)) return null;
+  /* Check Unit attribute: nm → Å */
+  var uMatch = /Unit\s*=\s*"?(\w+)/i.exec(m[0]);
+  var unit = uMatch ? uMatch[1].toLowerCase() : "";
+  if(unit.indexOf("nm")===0 || unit==="nanometer"){ lam *= 10; }
+  else if(lam>0.05 && lam<0.4){ lam *= 10; } /* No unit but value in nm range */
+  if(lam>0.5 && lam<3) return lam;
+  return null;
+}
+async function inflateRaw(u8){
+  if(typeof DecompressionStream==="undefined") throw "This browser does not support native decompression (DecompressionStream); cannot read .rasx. Please upgrade to a recent Chrome/Edge/Firefox/Safari.";
+  var ds=new DecompressionStream("deflate-raw");
+  var w=ds.writable.getWriter(); w.write(u8); w.close();
+  var reader=ds.readable.getReader(), chunks=[], total=0;
+  while(true){ var r=await reader.read(); if(r.done) break; chunks.push(r.value); total+=r.value.length; }
+  var out=new Uint8Array(total), off=0;
+  chunks.forEach(function(c){ out.set(c,off); off+=c.length; });
+  return out;
+}
+async function unzip(buf){
+  var dv=new DataView(buf), u8=new Uint8Array(buf), files={};
+  /* Locate EOCD (0x06054b50) */
+  var eocd=-1;
+  for(var i=buf.byteLength-22;i>=0 && i>=buf.byteLength-22-65536;i--){
+    if(dv.getUint32(i,true)===0x06054b50){ eocd=i; break; }
+  }
+  if(eocd<0) throw "Not a valid ZIP/RASX file (central directory not found)";
+  var cdCount=dv.getUint16(eocd+10,true), cdOff=dv.getUint32(eocd+16,true), p=cdOff;
+  for(var n=0;n<cdCount;n++){
+    if(dv.getUint32(p,true)!==0x02014b50) break;
+    var method=dv.getUint16(p+10,true);
+    var compSize=dv.getUint32(p+20,true);
+    var fnLen=dv.getUint16(p+28,true), exLen=dv.getUint16(p+30,true), cmLen=dv.getUint16(p+32,true);
+    var lhOff=dv.getUint32(p+42,true);
+    var name=new TextDecoder("utf-8").decode(u8.subarray(p+46,p+46+fnLen));
+    /* Read local header; data start = lhOff+30+local fnLen+local exLen */
+    var lFnLen=dv.getUint16(lhOff+26,true), lExLen=dv.getUint16(lhOff+28,true);
+    var dataStart=lhOff+30+lFnLen+lExLen;
+    var raw=u8.subarray(dataStart,dataStart+compSize);
+    files[name]={method:method,data:raw};
+    p+=46+fnLen+exLen+cmLen;
+  }
+  /* Decompress on demand: only the entries actually used are decompressed at the call site */
+  return files;
+}
+async function getEntryBytes(entry){
+  if(entry.method===0) return entry.data;           /* stored */
+  if(entry.method===8) return await inflateRaw(entry.data); /* deflate */
+  throw "RASX uses an unsupported compression method ("+entry.method+")";
+}
+function parseRASXProfile(text){
+  var x=[],y=[], lines=text.split(/\r?\n/);
+  for(var i=0;i<lines.length;i++){
+    var L=lines[i].trim();
+    if(!L || !/^[-+0-9.eE\s\t]+$/.test(L) || !/\d/.test(L)) continue;
+    var v=nums(L);
+    if(v.length>=2){ x.push(v[0]); y.push(v.length>=3 ? v[1]*v[2] : v[1]); }
+  }
+  if(x.length<3) throw "Insufficient Profile data points";
+  return {x:x,y:y,e:[],lambda:null};
+}
+async function loadRASX(f){
+  clearMsg();
+  try{
+    var buf=await f.arrayBuffer();
+    var files=await unzip(buf);
+    var pKey=Object.keys(files).find(function(k){ return /Profile\d*\.txt$/i.test(k); });
+    if(!pKey) throw "No Profile*.txt found in archive (may not be a SmartLab .rasx)";
+    var pBytes=await getEntryBytes(files[pKey]);
+    var pText=decodeText(pBytes);  /* BOM-adaptive: UTF-16 LE / UTF-8 auto-detection */
+    var r=parseRASXProfile(pText);
+    /* Try to read wavelength from MesurementConditions*.xml */
+    var xKey=Object.keys(files).find(function(k){ return /Conditions\d*\.xml$/i.test(k); });
+    if(xKey){
+      try{
+        var xBytes=await getEntryBytes(files[xKey]);
+        var xText=decodeText(xBytes);
+        var lam=extractRASXWavelength(xText);
+        if(lam) r.lambda=lam;
+      }catch(_){}
+    }
+    D.x=r.x; D.y=r.y; D.e=[]; D.lambda=r.lambda; D.name=f.name; D.srcFmt="RASX (SmartLab)";
+    view.x0=null; view.x1=null;
+    if(r.lambda) $("lamFrom").value=r.lambda;
+    $("outName").value=f.name.replace(/\.[^.]+$/,"")+"_conv";
+    $("btnConv").disabled=false; $("btnLam").disabled=false;
+    renderInfo(); draw();
+    validateAndWarn();
+  }catch(err){ showErr("RASX parsing failed: "+err); }
+}
+
+/* ============ Import flow ============ */
+var BIN_EXT=["raw","brml","inel"];
+function loadFile(f){
+  clearMsg();
+  var ext=(f.name.split(".").pop()||"").toLowerCase();
+  if(ext==="rasx"){ loadRASX(f); return; }
+  if(BIN_EXT.indexOf(ext)>=0){ showErr('"'+f.name+'" is a binary/compressed format (.'+ext+') which this tool cannot read yet.'); return; }
+  var rd=new FileReader();
+  rd.onload=function(){
+    try{
+      var r=parseFile(f.name, rd.result);
+      D.x=r.x; D.y=r.y; D.e=r.e||[]; D.lambda=r.lambda; D.name=f.name; D.srcFmt=r.srcFmt;
+      view.x0=null; view.x1=null;
+      if(r.lambda) $("lamFrom").value=r.lambda;
+      $("outName").value=f.name.replace(/\.[^.]+$/,"")+"_conv";
+      $("btnConv").disabled=false; $("btnLam").disabled=false;
+      renderInfo(); draw();
+      validateAndWarn();
+    }catch(err){ showErr("Parsing failed: "+err); }
+  };
+  rd.readAsText(f);
+}
+function avgStepIrregular(){
+  if(D.x.length<3) return false;
+  var s=avgStep(D.x);
+  for(var i=1;i<D.x.length;i++){ if(Math.abs((D.x[i]-D.x[i-1])-s) > Math.abs(s)*0.01) return true; }
+  return false;
+}
+/* Data quality validation (per opXRD paper arXiv:2503.05577v2 filtering rules) */
+function validateData(){
+  var warns=[], errs=[];
+  if(D.x.length===0) return {warns:warns, errs:errs};
+  /* All-zero intensity → invalid */
+  var allZero=D.y.every(function(v){return v<=0;});
+  if(allZero) errs.push("All intensity values are zero — data invalid (opXRD quality rule)");
+  /* Single unique angle → invalid */
+  var uq={}; D.x.forEach(function(v){uq[Math.round(v*1e6)]=true;});
+  if(Object.keys(uq).length===1) errs.push("Only one unique angle value — data invalid (opXRD quality rule)");
+  /* Negative angle → warning */
+  if(D.x.some(function(v){return v<0;})) warns.push("Negative angle data points present (opXRD quality rule suggests filtering)");
+  /* Fewer than 50 points → warning */
+  if(D.x.length<50) warns.push("Fewer than 50 data points (currently "+D.x.length+" points), which may reduce analysis accuracy (opXRD quality rule)");
+  /* Angle not ascending → warning */
+  var mono=true; for(var i=1;i<D.x.length;i++){ if(D.x[i]<D.x[i-1]){mono=false;break;} }
+  if(!mono) warns.push("Angle sequence is not monotonically increasing; auto-sorted before conversion");
+  return {warns:warns, errs:errs};
+}
+function validateAndWarn(){
+  var v=validateData();
+  if(v.errs.length){ showErr(v.errs.join("；")); return; }
+  var w=[];
+  if(avgStepIrregular()) w.push("Step size is not perfectly uniform; average step will be written in the header for fixed-step formats.");
+  w=w.concat(v.warns);
+  if(w.length) showWarn(w.join("；")); else clearMsg();
+  /* Auto-sort when non-monotonic to ensure correct RAW etc. output */
+  if(!v.errs.length){
+    var idx=D.x.map(function(_,i){return i;}).sort(function(a,b){return D.x[a]-D.x[b];});
+    if(idx.some(function(v,i){return v!==i;})){
+      D.x=idx.map(function(i){return D.x[i];});
+      D.y=idx.map(function(i){return D.y[i];});
+      if(D.e.length===idx.length) D.e=idx.map(function(i){return D.e[i];});
+    }
+  }
+}
+function renderInfo(){
+  var el=$("info");
+  el.style.display="block";
+  el.innerHTML="<table>"
+    +"<tr><td>File</td><td><b>"+D.name+"</b> (recognized as '+D.srcFmt+')</td></tr>"
+    +"<tr><td>Data points</td><td>"+D.x.length+" points</td></tr>"
+    +"<tr><td>2θ range</td><td>"+fmt(D.x[0])+"° ~ "+fmt(D.x[D.x.length-1])+", avg step "+fmt(avgStep(D.x),5)+"°</td></tr>"
+    +"<tr><td>Intensity range</td><td>"+fmt(Math.min.apply(null,D.y),1)+" ~ "+fmt(Math.max.apply(null,D.y),1)+"</td></tr>"
+    +"<tr><td>Wavelength</td><td>"+(D.lambda?D.lambda+" Å（read from file header）":"not provided (defaults to Cu Kα1)")+"</td></tr>"
+    +"</table>";
+}
+
+$("drop").addEventListener("click",function(){ $("file").click(); });
+$("file").addEventListener("change",function(e){ if(e.target.files.length) loadFile(e.target.files[0]); e.target.value=""; });
+["dragover","dragenter"].forEach(function(ev){ $("drop").addEventListener(ev,function(e){ e.preventDefault(); $("drop").classList.add("hover"); }); });
+["dragleave","drop"].forEach(function(ev){ $("drop").addEventListener(ev,function(e){ e.preventDefault(); $("drop").classList.remove("hover"); }); });
+$("drop").addEventListener("drop",function(e){ if(e.dataTransfer.files.length) loadFile(e.dataTransfer.files[0]); });
+
+/* ============ Chart ============ */
+var cv=$("chart"), ctx=cv.getContext("2d"), M={l:62,r:16,t:14,b:38};
+function dpiFix(){
+  var r=cv.getBoundingClientRect(), dpr=window.devicePixelRatio||1;
+  cv.width=Math.round(r.width*dpr); cv.height=Math.round(340*dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  return {w:r.width,h:340};
+}
+function ticks(min,max,n){
+  var span=max-min; if(span<=0) return [min];
+  var raw=span/n, mag=Math.pow(10,Math.floor(Math.log10(raw))), norm=raw/mag;
+  var step=(norm<1.5?1:norm<3.5?2:norm<7.5?5:10)*mag;
+  var t=[], v=Math.ceil(min/step)*step;
+  for(;v<=max+1e-9;v+=step) t.push(v);
+  return t;
+}
+function draw(){
+  var s=dpiFix(), W=s.w, H=s.h;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle="#ffffff"; ctx.fillRect(0,0,W,H);
+  if(!D.x.length){
+    ctx.fillStyle="#9aa7b8"; ctx.font="14px Segoe UI"; ctx.textAlign="center";
+    ctx.fillText("Import a file to display the diffraction pattern here", W/2, H/2); return;
+  }
+  var x0 = view.x0!==null?view.x0:D.x[0], x1 = view.x1!==null?view.x1:D.x[D.x.length-1];
+  var sq=$("ckSqrt").checked;
+  var ys=[], xs=[];
+  for(var i=0;i<D.x.length;i++){ if(D.x[i]>=x0&&D.x[i]<=x1){ xs.push(D.x[i]); ys.push(sq?Math.sqrt(Math.max(0,D.y[i])):D.y[i]); } }
+  if(xs.length<2){ return; }
+  var ymin=Math.min.apply(null,ys), ymax=Math.max.apply(null,ys);
+  var yr=ymax-ymin||1; ymin-=yr*0.04; ymax+=yr*0.06;
+  var pw=W-M.l-M.r, ph=H-M.t-M.b;
+  function X(v){ return M.l+(v-x0)/(x1-x0)*pw; }
+  function Y(v){ return M.t+ph-(v-ymin)/(ymax-ymin)*ph; }
+  /* Grid and axes */
+  ctx.strokeStyle="#eef1f6"; ctx.lineWidth=1; ctx.font="11px Segoe UI"; ctx.fillStyle="#5b6675";
+  ctx.textAlign="center";
+  ticks(x0,x1,8).forEach(function(t){ var px=X(t); ctx.beginPath(); ctx.moveTo(px,M.t); ctx.lineTo(px,M.t+ph); ctx.stroke(); ctx.fillText(fmt(t,2),px,H-M.b+16); });
+  ctx.textAlign="right";
+  ticks(ymin,ymax,5).forEach(function(t){ var py=Y(t); ctx.beginPath(); ctx.moveTo(M.l,py); ctx.lineTo(M.l+pw,py); ctx.stroke(); ctx.fillText(t>=10000?t.toExponential(1):fmt(t,0),M.l-8,py+4); });
+  ctx.strokeStyle="#cbd5e1"; ctx.strokeRect(M.l,M.t,pw,ph);
+  ctx.fillStyle="#334155"; ctx.textAlign="center"; ctx.font="12px Segoe UI";
+  ctx.fillText("2θ (°)", M.l+pw/2, H-6);
+  ctx.save(); ctx.translate(14,M.t+ph/2); ctx.rotate(-Math.PI/2); ctx.fillText(sq?"√Intensity":"Intensity",0,0); ctx.restore();
+  /* Curve */
+  ctx.strokeStyle="#2563eb"; ctx.lineWidth=1.4; ctx.beginPath();
+  for(var j=0;j<xs.length;j++){ var px2=X(xs[j]), py2=Y(ys[j]); if(j===0) ctx.moveTo(px2,py2); else ctx.lineTo(px2,py2); }
+  ctx.stroke();
+  draw._map={X:X,Y:Y,x0:x0,x1:x1};
+}
+/* Zoom interaction */
+var dragA=null;
+cv.addEventListener("mousedown",function(e){ if(!D.x.length) return; dragA=e.offsetX; });
+cv.addEventListener("mousemove",function(e){
+  if(!D.x.length||!draw._map) return;
+  var tip=$("tip");
+  if(dragA!==null){
+    draw();
+    ctx.fillStyle="rgba(37,99,235,.12)";
+    ctx.fillRect(Math.min(dragA,e.offsetX),M.t,Math.abs(e.offsetX-dragA),340-M.t-M.b);
+    tip.style.display="none"; return;
+  }
+  var m=draw._map, W=cv.getBoundingClientRect().width;
+  var vx=m.x0+(e.offsetX-M.l)/(W-M.l-M.r)*(m.x1-m.x0);
+  var bi=-1,bd=1e18;
+  for(var i=0;i<D.x.length;i++){ var d=Math.abs(D.x[i]-vx); if(d<bd){bd=d;bi=i;} }
+  if(bi>=0 && e.offsetX>M.l && e.offsetX<W-M.r){
+    tip.style.display="block";
+    tip.style.left=(e.offsetX+12)+"px"; tip.style.top=(e.offsetY-8)+"px";
+    tip.textContent="2θ="+fmt(D.x[bi],3)+"°  I="+fmt(D.y[bi],1);
+  } else tip.style.display="none";
+});
+window.addEventListener("mouseup",function(e){
+  if(dragA===null) return;
+  var r=cv.getBoundingClientRect();
+  var bx=e.clientX-r.left, m=draw._map;
+  if(m && Math.abs(bx-dragA)>8){
+    var W=r.width, f=function(px){ return m.x0+(px-M.l)/(W-M.l-M.r)*(m.x1-m.x0); };
+    view.x0=Math.min(f(dragA),f(bx)); view.x1=Math.max(f(dragA),f(bx));
+  }
+  dragA=null; draw();
+});
+cv.addEventListener("dblclick",function(){ view.x0=null; view.x1=null; draw(); });
+$("btnReset").addEventListener("click",function(){ view.x0=null; view.x1=null; draw(); });
+$("ckSqrt").addEventListener("change",draw);
+window.addEventListener("resize",draw);
+
+/* ============ Wavelength conversion ============ */
+$("lamToSel").addEventListener("change",function(){ $("lamCustomBox").style.display = this.value==="custom"?"flex":"none"; });
+$("btnLam").addEventListener("click",function(){
+  var lf=parseFloat($("lamFrom").value);
+  var sel=$("lamToSel").value;
+  var lt= sel==="custom" ? parseFloat($("lamCustom").value) : parseFloat(sel);
+  if(!(lf>0&&lt>0)){ showErr("Wavelength must be positive"); return; }
+  clearMsg();
+  var nx=[],ny=[],ne=[],drop=0, DEG=Math.PI/180;
+  for(var i=0;i<D.x.length;i++){
+    var s=(lt/lf)*Math.sin(D.x[i]/2*DEG);
+    if(s>=-1&&s<=1){ nx.push(2*Math.asin(s)/DEG); ny.push(D.y[i]); if(D.e.length) ne.push(D.e[i]); }
+    else drop++;
+  }
+  D.x=nx; D.y=ny; D.e=ne; D.lambda=lt; $("lamFrom").value=lt;
+  view.x0=null; view.x1=null;
+  renderInfo(); draw();
+  if(drop) showWarn("Conversion complete; "+drop+" data points outside the conversion range were clipped.");
+});
+
+/* ============ Export ============ */
+function lineJoin(arr,perLine,fmtFn){
+  var out=[],row=[];
+  for(var i=0;i<arr.length;i++){ row.push(fmtFn(arr[i])); if(row.length===perLine){ out.push(row.join(" ")); row=[]; } }
+  if(row.length) out.push(row.join(" "));
+  return out.join("\r\n");
+}
+function esdOf(i){ return D.e.length===D.x.length ? D.e[i] : Math.sqrt(Math.max(0,D.y[i])); }
+var writers={
+  xy:function(){ var L=[]; for(var i=0;i<D.x.length;i++) L.push(fmt(D.x[i],4)+"\t"+fmt(D.y[i],3)); return {ext:"xy",text:L.join("\r\n")}; },
+  xye:function(){ var L=[]; for(var i=0;i<D.x.length;i++) L.push(fmt(D.x[i],4)+"\t"+fmt(D.y[i],3)+"\t"+fmt(esdOf(i),3)); return {ext:"xye",text:L.join("\r\n")}; },
+  csv:function(){ var L=["2theta,intensity"]; for(var i=0;i<D.x.length;i++) L.push(fmt(D.x[i],4)+","+fmt(D.y[i],3)); return {ext:"csv",text:L.join("\r\n")}; },
+  dat:function(){
+    var s=avgStep(D.x);
+    var head=fmt(D.x[0],4)+" "+fmt(s,6)+" "+fmt(D.x[D.x.length-1],4);
+    return {ext:"dat",text:head+"\r\n"+lineJoin(D.y,8,function(v){return fmt(v,2);})};
+  },
+  cpi:function(){
+    var s=avgStep(D.x), lam=D.lambda||1.540598;
+    var L=["SIETRONICS XRD SCAN",fmt(D.x[0],4),fmt(D.x[D.x.length-1],4),fmt(s,6),fmt(lam,6),new Date().toISOString().slice(0,10),"1.0","XRD-FileConv","SCANDATA"];
+    D.y.forEach(function(v){L.push(fmt(v,2));});
+    return {ext:"cpi",text:L.join("\r\n")};
+  },
+  udf:function(){
+    var s=avgStep(D.x), lam=D.lambda||1.540598;
+    var head="SampleIdent,XRD-FileConv,/\r\nLabdaAlpha1, "+fmt(lam,6)+",/\r\nDataAngleRange, "+fmt(D.x[0],4)+", "+fmt(D.x[D.x.length-1],4)+",/\r\nScanStepSize, "+fmt(s,6)+",/\r\nRawScan";
+    var body=[],row=[];
+    for(var i=0;i<D.y.length;i++){ row.push(fmt(D.y[i],1)); if(row.length===8){ body.push(row.join(", ")); row=[]; } }
+    if(row.length) body.push(row.join(", "));
+    return {ext:"udf",text:head+"\r\n"+body.join(",\r\n")+"\r\n/"};
+  },
+  uxd:function(){
+    var s=avgStep(D.x);
+    var L=["; XRD-FileConv export","_DRIVE = COUPLED","_STEPSIZE = "+fmt(s,6),"_START = "+fmt(D.x[0],4),"_2THETACOUNTS"];
+    for(var i=0;i<D.x.length;i++) L.push(fmt(D.x[i],4)+"   "+fmt(D.y[i],2));
+    return {ext:"uxd",text:L.join("\r\n")};
+  },
+  asc:function(){
+    var s=avgStep(D.x);
+    var L=["*TYPE = Raw","*START = "+fmt(D.x[0],4),"*STOP = "+fmt(D.x[D.x.length-1],4),"*STEP = "+fmt(s,6),"*COUNT = "+D.y.length];
+    L.push(lineJoin(D.y,5,function(v){return fmt(v,2);}));
+    return {ext:"asc",text:L.join("\r\n")+"\r\n*END"};
+  },
+  gsas:function(){
+    var s=avgStep(D.x), n=D.y.length, nrec=Math.ceil(n/5);
+    var L=["Converted by XRD-FileConv",
+      "BANK 1 "+n+" "+nrec+" CONST "+fmt(D.x[0]*100,2)+" "+fmt(s*100,2)+" 0 0 ESD"];
+    var row=[];
+    for(var i=0;i<n;i++){
+      row.push(pad(fmt(D.y[i],1),8)+pad(fmt(esdOf(i),1),8));
+      if(row.length===5){ L.push(row.join("")); row=[]; }
+    }
+    if(row.length) L.push(row.join(""));
+    return {ext:"gsa",text:L.join("\r\n")};
+  },
+  xrdml:function(){
+    var lam=D.lambda||1.540598;
+    var t='<?xml version="1.0" encoding="UTF-8"?>\r\n'
+      +'<xrdMeasurements xmlns="http://www.xrdml.com/XRDMeasurement/1.0" status="Completed">\r\n'
+      +' <xrdMeasurement measurementType="Scan" status="Completed">\r\n'
+      +'  <usedWavelength intended="K-Alpha 1"><kAlpha1 unit="Angstrom">'+fmt(lam,6)+'</kAlpha1><kAlpha2 unit="Angstrom">'+fmt(lam,6)+'</kAlpha2><kBeta unit="Angstrom">'+fmt(lam,6)+'</kBeta><ratioKAlpha2KAlpha1>0.5</ratioKAlpha2KAlpha1></usedWavelength>\r\n'
+      +'  <scan appendNumber="0" mode="Continuous" scanAxis="Gonio" status="Completed">\r\n'
+      +'   <dataPoints>\r\n'
+      +'    <positions axis="2Theta" unit="deg"><startPosition>'+fmt(D.x[0],4)+'</startPosition><endPosition>'+fmt(D.x[D.x.length-1],4)+'</endPosition></positions>\r\n'
+      +'    <commonCountingTime unit="seconds">1.00</commonCountingTime>\r\n'
+      +'    <intensities unit="counts">'+D.y.map(function(v){return fmt(v,0);}).join(" ")+'</intensities>\r\n'
+      +'   </dataPoints>\r\n  </scan>\r\n </xrdMeasurement>\r\n</xrdMeasurements>';
+    return {ext:"xrdml",text:t};
+  },
+  raw:function(){
+    /* Bruker RAW ver.1 (little-endian). Structure verified against xylib bruker_raw.cpp load_version1:
+       magic "RAW " + [u32 steps, f32 time/step, f32 xstep, u32 scanmode, 4B reserved,
+       f32 xstart, f32 theta(-1e6), f32 khi(-1e6), f32 phi(-1e6), char[32] sample,
+       f32 Kα1, f32 Kα2, 72B reserved, u32 following(0)] + float32[steps] intensity */
+    var n=D.x.length, xstart=D.x[0], xstep=avgStep(D.x);
+    var a1=D.lambda||1.540598, a2=1.544426;
+    var buf=new ArrayBuffer(4+152+n*4), dv=new DataView(buf), off=0;
+    function wStr(s,len){ for(var i=0;i<len;i++) dv.setUint8(off+i, i<s.length?(s.charCodeAt(i)&0xff):0); off+=len; }
+    function wU32(v){ dv.setUint32(off,v>>>0,true); off+=4; }
+    function wF32(v){ dv.setFloat32(off,v,true); off+=4; }
+    wStr("RAW ",4);
+    wU32(n); wF32(1.0); wF32(xstep); wU32(1); wU32(0); wF32(xstart);
+    wF32(-1e6); wF32(-1e6); wF32(-1e6);
+    wStr("XRD-FileConv",32);
+    wF32(a1); wF32(a2);
+    off+=72;              /* Reserved field, ArrayBuffer already zero-initialized */
+    wU32(0);             /* following_range=0, single block ends */
+    for(var i=0;i<n;i++) wF32(D.y[i]);
+    return {ext:"raw", bytes:new Uint8Array(buf)};
+  },
+  json:function(){
+    return {ext:"json",text:JSON.stringify({source:D.name,generator:"XRD-FileConv",lambda:D.lambda,points:D.x.length,twoTheta:D.x.map(function(v){return +fmt(v,4);}),intensity:D.y.map(function(v){return +fmt(v,3);})},null,1)};
+  },
+  dcsv:function(){
+    var lam=D.lambda||1.540598, DEG=Math.PI/180;
+    var L=["2theta_deg,d_angstrom,Q_invA,intensity"];
+    for(var i=0;i<D.x.length;i++){
+      var st=Math.sin(D.x[i]/2*DEG);
+      if(st<=0){continue;}
+      var d=lam/(2*st), Q=4*Math.PI*st/lam;
+      L.push(fmt(D.x[i],4)+","+fmt(d,5)+","+fmt(Q,5)+","+fmt(D.y[i],3));
+    }
+    return {ext:"csv",text:L.join("\r\n")};
+  }
+};
+$("btnConv").addEventListener("click",function(){
+  if(!D.x.length){ showErr("Please import a data file first"); return; }
+  clearMsg();
+  try{
+    var w=writers[$("outFmt").value]();
+    var name=($("outName").value.trim()||"converted")+"."+w.ext;
+    var blob = w.bytes ? new Blob([w.bytes],{type:"application/octet-stream"})
+                       : new Blob([w.text],{type:"text/plain;charset=utf-8"});
+    var a=document.createElement("a");
+    a.href=URL.createObjectURL(blob); a.download=name;
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },800);
+  }catch(err){ showErr("Export failed: "+err); }
+});
+
+draw();
+</script>
+</body>
+</html>
