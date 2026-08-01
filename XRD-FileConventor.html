@@ -33,6 +33,9 @@ header h1{margin:0 0 6px;font-size:24px}
 header p{margin:2px 0;font-size:13.5px;opacity:.92}
 .badges{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
 .badge{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);padding:2px 11px;border-radius:999px;font-size:12px}
+.scope{background:var(--warn-soft);border:1px solid #f0d6a8;border-left:4px solid var(--warn);border-radius:12px;padding:13px 18px;margin-bottom:18px;font-size:13px;color:#7c4a0a;line-height:1.7}
+.scope b{color:#8a5a08}
+.scope code{background:rgba(217,119,6,.13);border-radius:4px;padding:1px 5px;font-family:Consolas,Monaco,"Courier New",monospace;font-size:12px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 24px;margin-bottom:18px;box-shadow:0 1px 3px rgba(16,24,40,.04)}
 h2{font-size:17px;margin:0 0 12px;display:flex;align-items:center;gap:9px}
 h2 .n{background:var(--brand);color:#fff;width:24px;height:24px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex:none}
@@ -85,8 +88,15 @@ code{background:#f1f5f9;color:#be185d;padding:1px 6px;border-radius:5px;font-fam
     <span class="badge">✔ Data never leaves your machine</span>
     <span class="badge">✔ 10+ text formats inter-convertible</span>
     <span class="badge">✔ Plot preview / wavelength conversion</span>
+    <span class="badge">✔ Verified on Rigaku &amp; Bruker data</span>
   </div>
 </header>
+
+<div class="scope">
+  <b>⚠ Validation scope —</b> the author has access to <b>Rigaku</b> and <b>Bruker</b> diffractometers only, so conversions have been verified <b>only between formats produced by these two vendors</b> — e.g. Rigaku SmartLab <code>.rasx</code> / <code>.ras</code> / <code>.asc</code> → Bruker <code>.raw</code> (ver.1) / <code>.uxd</code>, and the reverse text-format paths.
+  Readers and writers for other vendors (PANalytical <code>.xrdml</code>, Sietronics <code>.cpi</code>, Philips <code>.udf</code>, Jade <code>.mdi</code>, GSAS, Riet7 <code>.dat</code>) are implemented strictly from published open-source specifications (xylib / GSAS-II) but have <b>not been tested against real instrument files</b>.
+  Please check the converted output before relying on it for analysis or publication. Bug reports and sample files for untested formats are very welcome.
+</div>
 
 <section class="card">
   <h2><span class="n">1</span>Import data file</h2>
@@ -154,7 +164,7 @@ code{background:#f1f5f9;color:#be185d;padding:1px 6px;border-radius:5px;font-fam
     <div class="field"><label>Output file name (no extension)</label><input type="text" id="outName" value="converted" style="min-width:220px"></div>
     <button class="btn-p" id="btnConv" disabled>Convert & download</button>
   </div>
-  <div class="note">For fixed-step formats (DAT/CPI/UDF/ASC/GSAS/XRDML/RAW), if the original step is non-uniform, the average step is written in the header. <b>Bruker RAW ver.1</b> is binary output (magic "RAW ", float32 intensity, little-endian, structure verified against the xylib library). <b>.rasx</b> (Rigaku SmartLab, ZIP container) input is supported: automatically detects UTF-16/UTF-8 encoded Profile data, correctly applies the attenuation factor (y = intensity × attenuation coefficient), and extracts the wavelength from the MesurementConditions XML into the RAW header. Data-quality checks follow the opXRD (arXiv:2503.05577v2) guidelines: warn on negative angles / fewer than 50 points, reject all-zero intensity / single unique angle.</div>
+  <div class="note">For fixed-step formats (DAT/CPI/UDF/ASC/GSAS/XRDML/RAW), if the original step is non-uniform, the average step is written in the header. <b>Bruker RAW ver.1</b> is binary output (magic "RAW ", float32 intensity, little-endian, structure verified against the xylib library). <b>.rasx</b> (Rigaku SmartLab, ZIP container) input is supported: automatically detects UTF-16/UTF-8 encoded Profile data, correctly applies the attenuation factor (y = intensity × attenuation coefficient), and extracts the wavelength from the MesurementConditions XML into the RAW header. Data-quality checks follow the opXRD (arXiv:2503.05577v2) guidelines: warn on negative angles / fewer than 50 points, reject all-zero intensity / single unique angle.<br><b>Note:</b> only the Rigaku ↔ Bruker conversion paths have been validated against real instrument files; output for other vendors' formats should be checked before use.</div>
 </section>
 
 <footer>

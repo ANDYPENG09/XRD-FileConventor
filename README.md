@@ -6,6 +6,13 @@ locally in your browser — no server, no upload, no dependencies.
 
 > **Made by:** PENG &nbsp;|&nbsp; **Built with:** VibeCoding &nbsp;|&nbsp; **License:** MIT
 
+> [!IMPORTANT]
+> **Validation scope.** The author has access to **Rigaku** and **Bruker** diffractometers only.
+> Conversions have therefore been verified **only between formats produced by these two vendors**.
+> Support for other vendors' formats is implemented from published open-source specifications but
+> is **untested against real instrument files** — please verify the output before use.
+> See [Validation scope](#validation-scope) for details.
+
 ## Features
 
 - **Zero dependencies** — a single `.html` file. Double-click to open in any modern browser.
@@ -26,6 +33,24 @@ locally in your browser — no server, no upload, no dependencies.
 
 > Binary/compressed inputs other than `.rasx` (e.g. `.raw`, `.brml`) are not read by the web
 > version; convert them with a desktop tool such as PowDLL first.
+
+## Validation scope
+
+The instruments available to the author are **Rigaku** and **Bruker** only. Test coverage
+therefore reflects that:
+
+| Status | Formats | Notes |
+|--------|---------|-------|
+| ✅ **Verified on real instrument files** | Rigaku `.rasx` (SmartLab), `.ras`, `.asc` · Bruker `.raw` (ver.1), `.uxd` | Round-trip checked, including UTF-16 decoding, attenuation-factor scaling and wavelength propagation for `.rasx` → `.raw` |
+| ✅ **Verified with synthetic data** | `.xy` `.xye` `.csv` `.txt` `.json` · d-spacing CSV | Plain-text formats; unit-tested parsers/writers |
+| ⚠️ **Implemented from spec, untested on real files** | PANalytical `.xrdml` · Sietronics `.cpi` · Philips `.udf` · Jade `.mdi` · GSAS `.gsas`/`.gsa` · Riet7 `.dat` | Written strictly to the published open-source specifications (xylib / GSAS-II). Byte-level or header-field deviations produced by specific instrument software versions cannot be ruled out |
+
+**Recommendation:** always open the converted file in your own analysis software and compare the
+2θ range, step size, point count and peak positions against the source before using the result for
+analysis or publication.
+
+If you have sample files from an untested vendor, please open an issue — real-world test data for
+these formats is the most useful contribution to this project.
 
 ## Accuracy notes
 
