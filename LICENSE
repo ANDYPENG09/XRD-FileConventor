@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2026 PENG
+Copyright (c) 2026 ANDYPENG09
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,9 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-Project: XRD-FileConventor
-Description: Powder X-ray diffraction (XRD) data format inter-conversion tool · single-file offline edition (pure JavaScript re-implementation)
-Format specification references: xylib (LGPL) · GSAS-II (BSD-3-Clause) · opXRD (CC BY 4.0)
