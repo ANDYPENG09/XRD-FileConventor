@@ -1,5 +1,7 @@
 # XRD-FileConventor
 
+**[Open converter](https://andypeng09.github.io/xrd-toolkit/demos/fileconventor/)** · [All XRD tools](https://andypeng09.github.io/xrd-toolkit/)
+
 A standalone, single-file, offline web tool for inter-converting powder X-ray
 diffraction (XRD) data between the file formats used by **Rigaku**, **Bruker**
 and **MDI Jade**, plus generic numeric text. All processing runs locally in
